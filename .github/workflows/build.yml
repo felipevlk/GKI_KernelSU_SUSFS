@@ -298,6 +298,42 @@ jobs:
         config_list: |
           CONFIG_KPM=y
 
+    - name: SUSFS exec-hook compat for SukiSU-Ultra (drop post_execveat/su_fd)
+      if: inputs.root_flavor == 'sukisu-ultra'
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        set -euo pipefail
+        F=fs/exec.c
+        [ -f "$F" ] || { echo "fs/exec.c not found"; exit 1; }
+
+        KSUDIR=""
+        for d in "$GITHUB_WORKSPACE/kernel/SukiSU-Ultra/kernel" "$GITHUB_WORKSPACE/kernel/KernelSU/kernel"; do
+          [ -d "$d" ] && KSUDIR="$d" && break
+        done
+        if [ -n "$KSUDIR" ] && grep -rqsE --include='*.c' '^[[:space:]]*int[[:space:]]+ksu_handle_post_execveat_sucompat[[:space:]]*\(' "$KSUDIR"; then
+          echo "SukiSU already implements the su-session hook; nothing to do."
+          exit 0
+        fi
+
+        if grep -qE 'ksu_install_su_fd\(\);|ksu_handle_post_execveat_sucompat\(' "$F"; then
+          echo "Reverting the new su-session exec hook to the legacy behaviour for SukiSU-Ultra"
+          sed -i '/^extern int ksu_install_su_fd(void);$/d' "$F"
+          sed -i '/^extern int ksu_handle_post_execveat_sucompat(/,+1d' "$F"
+          sed -i 's/is_su_session = !\(ksu_handle_execveat[^;]*;\)/\1/' "$F"
+          sed -i '/^[[:space:]]*bool is_su_session = false;$/d' "$F"
+          sed -i '/^[[:space:]]*if (unlikely(is_su_session && retval >= 0))$/,+1d' "$F"
+          sed -i '/^[[:space:]]*if (unlikely(is_su_session))$/,+1d' "$F"
+          sed -i '/^#ifdef CONFIG_KSU_SUSFS$/N;/^#ifdef CONFIG_KSU_SUSFS\n#endif \/\/ #ifdef CONFIG_KSU_SUSFS$/d' "$F"
+        fi
+
+        if grep -qE 'ksu_install_su_fd|ksu_handle_post_execveat_sucompat|is_su_session' "$F"; then
+          echo "::error::fs/exec.c still references symbols SukiSU-Ultra does not implement"
+          grep -nE 'ksu_install_su_fd|ksu_handle_post_execveat_sucompat|is_su_session' "$F" || true
+          exit 1
+        fi
+        echo "OK: exec-hook compat applied"
+
     - name: Fix selinux_hide pointer-bool-conversion on 6.6+ (ALL branches)
       shell: bash
       run: |
