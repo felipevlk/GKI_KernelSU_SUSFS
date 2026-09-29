@@ -591,6 +591,28 @@ jobs:
         version: ${{ inputs.version }}
         page_size: ${{ inputs.page_size }}
 
+    - name: Apply KPM image patch (SukiSU-Ultra only)
+      if: inputs.root_flavor == 'sukisu-ultra'
+      shell: bash
+      working-directory: ${{ github.workspace }}/AnyKernel3
+      run: |
+        set -euo pipefail
+        if [ ! -s Image ]; then
+          echo "No Image in AnyKernel3; skipping KPM image patch."
+          exit 0
+        fi
+        orig=$(stat -c %s Image)
+        curl -LSsf "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU_patch/refs/heads/main/kpm/patch_linux" -o patch
+        chmod 755 patch
+        ./patch
+        if [ -f oImage ] && [ "$(stat -c %s oImage)" -ge "$(( orig * 80 / 100 ))" ]; then
+          mv oImage Image
+          echo "KPM image patched OK (${orig} -> $(stat -c %s Image) bytes)"
+        else
+          echo "::error::KPM image patch failed (oImage missing or truncated)"
+          exit 1
+        fi
+
     - name: Get Cache Stats
       uses: ./.github/actions/cache-stats
       with:
