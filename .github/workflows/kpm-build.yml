@@ -1,0 +1,73 @@
+name: Build KPMs
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      KP: ${{ github.workspace }}/KernelPatch
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ARM GNU toolchain (aarch64-none-elf)
+        run: |
+          set -e
+          curl -L -o /tmp/arm.txz https://developer.arm.com/-/media/Files/downloads/gnu/15.2.rel1/binrel/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf.tar.xz
+          tar -xf /tmp/arm.txz -C /tmp
+          echo "/tmp/arm-gnu-toolchain-15.2.rel1-x86_64-aarch64-none-elf/bin" >> "$GITHUB_PATH"
+
+      - name: Clone KernelPatch headers
+        run: git clone --depth=1 https://github.com/bmax121/KernelPatch.git "$KP"
+
+      - name: Build kpm-rootstealth (kelexine)
+        continue-on-error: true
+        run: |
+          git clone --depth=1 https://github.com/kelexine/kpm-rootstealth.git /tmp/rs
+          cd /tmp/rs
+          make TARGET_COMPILE=aarch64-none-elf- KP_ROOT="$KP" KP_DIR="$KP" || true
+          find . -name '*.kpm' -exec cp -v {} "$GITHUB_WORKSPACE/" \; || true
+
+      - name: Build kpm-panda-hide (P4nda0s)
+        continue-on-error: true
+        run: |
+          git clone --recursive --depth=1 https://github.com/P4nda0s/kpm-panda-hide.git /tmp/ph
+          cd /tmp/ph
+          make TARGET_COMPILE=aarch64-none-elf- KP_DIR="$KP" || true
+          find . -name '*.kpm' -exec cp -v {} "$GITHUB_WORKSPACE/" \; || true
+
+      - name: Build kpm-hide-env (klcok)
+        continue-on-error: true
+        run: |
+          git clone --depth=1 https://github.com/klcok/kpm-hide-env.git /tmp/he
+          cd /tmp/he
+          cp -v v4/hide_env.kpm "$GITHUB_WORKSPACE/" || true
+          make TARGET_COMPILE=aarch64-none-elf- KP_DIR="$KP" || true
+          find . -name '*.kpm' -exec cp -v {} "$GITHUB_WORKSPACE/" \; || true
+
+      - name: Build kpm-hide (grz-1)
+        continue-on-error: true
+        run: |
+          git clone --depth=1 https://github.com/grz-1/kpm-hide.git /tmp/hide
+          cd /tmp/hide/src
+          cmake -B build -DCMAKE_SYSTEM_NAME=Generic \
+            -DCMAKE_C_COMPILER=aarch64-none-elf-gcc \
+            -DKP_DIR="$KP" -DKERNELPATCH_DIR="$KP" . || true
+          cmake --build build || true
+          find /tmp/hide -name '*.kpm' -exec cp -v {} "$GITHUB_WORKSPACE/" \; || true
+
+      - name: List built KPMs
+        run: |
+          ls -la *.kpm 2>/dev/null || echo "NENHUM kpm gerado"
+          for f in *.kpm; do [ -f "$f" ] && file "$f"; done
+
+      - name: Upload KPMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: kpm-modules
+          path: "*.kpm"
+          if-no-files-found: warn
