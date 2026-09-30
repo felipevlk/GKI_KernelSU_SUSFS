@@ -1,111 +1,183 @@
 <div align="center">
 
-# Wild Kernels for Android devices running GKI 2.0 (5.10+)
+# AntiRoot — Kernel GKI 5.10 + SukiSU-Ultra + KPM + SUSFS
 
+**Kernel GKI _android12-5.10_ para o Moto G54 5G / G64 5G (`cancunf`)** com
+SukiSU-Ultra, **KPM nativo**, SUSFS v2.3.0, NoMount e extras — focado em
+**ocultação de root** (bancos, jogos e detectores).
+
+[![KMI](https://img.shields.io/badge/KMI-5.10--android12-2f7259.svg)]()
+[![Device](https://img.shields.io/badge/device-cancunf%20(Moto%20G54%2FG64)-3DDC84.svg)]()
+[![Root](https://img.shields.io/badge/root-SukiSU--Ultra-5AA300.svg)]()
+[![KPM](https://img.shields.io/badge/KPM-native-E67E22.svg)]()
+[![SUSFS](https://img.shields.io/badge/SUSFS-v2.3.0-4c8bf5.svg)]()
 [![License: GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
-[![Third-Party Notices](https://img.shields.io/badge/notices-THIRD__PARTY_NOTICES-lightgrey.svg)](THIRD_PARTY_NOTICES.md)
 
 </div>
 
-> [!CAUTION]
-> Wild Kernels is not responsible for bricked devices or damage. By flashing, you assume all risk. Back up your data and understand the risks before flashing.
+> [!WARNING]
+> **Faça backup do `boot` antes de flashar.** Nada aqui tem garantia de que vai
+> bootar no seu aparelho. Você assume o risco. Este projeto é um **fork** de
+> [WildKernels/GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS)
+> mantido pela comunidade.
 
 ---
 
-## About
+## Sobre
 
-Generic kernels built on [Google's GKI sources](https://android.googlesource.com/kernel/common/) with KernelSU and SUSFS for root hiding and detection evasion — broad compatibility, not guaranteed for every device.
+Build **automatizado (GitHub Actions)** de kernel **GKI** para o
+[Moto G54 5G / G64 5G (`cancunf`, MediaTek MT6855)](https://en.wikipedia.org/wiki/Moto_G54_5G),
+com foco no **máximo de ocultação de root** no Android 13/14.
 
----
+Em cima do build do **WildKernels**, este fork adiciona:
 
-## Features
-
-- **KernelSU / KernelSU-Next / ReSukiSU** — root implementations
-- **susfs4ksu** — root hiding (incl. Ptrace Leak Fix, Unicode Fix)
-- **NoMount / Mountify** — mount metamodules
-- **Baseband Guard** — partition protection
-- **Networking** — WireGuard, BBR, IPSet, CIFS
-- **TMPFS** — xattr / POSIX ACLs
-- **BPF** — BTF / eBPF / FUSE-BPF
-- **Performance** — incl. NTSync
-- **DroidSpaces** — container runtime
-
-> [!TIP]
-> Full documentation: [Wiki](https://github.com/WildKernels/GKI_KernelSU_SUSFS/wiki)
+- ✅ **KPM nativo** — a `Image` é pós-patcheada com o `kpm/patch_linux` do
+  [SukiSU_patch](https://github.com/SukiSU-Ultra/SukiSU_patch), habilitando o
+  loader de **KernelPatch Modules (.kpm)** de verdade (sem ser stub).
+- ✅ **Compat SUSFS ↔ SukiSU** — remove o novo *su-session exec hook* que o
+  SukiSU-Ultra ainda não implementa, permitindo compilar com o **SUSFS mais novo**.
+- ✅ Correção do header de auth do step de metadata do workflow.
 
 ---
 
-## Build Your Own Kernel
+## Features do kernel
 
-Fork the repository and follow **[Build Your Own Kernel](docs/build-from-fork.md)** to select one kernel family, patch level, root implementation, and feature set in GitHub Actions.
+| Categoria | O que vem |
+|---|---|
+| **Root** | **SukiSU-Ultra** (branch `builtin`) |
+| **KPM** | `CONFIG_KPM=y` + `Image` pós-patcheada (KPM real) |
+| **Ocultação** | **SUSFS v2.3.0** (sus_path/sus_mount/sus_kstat/spoof_uname/open_redirect/sus_map) |
+| **Mounts** | **NoMount** (VFS path redirection — metamódulo) |
+| **Segurança** | **Baseband Guard** (BBG) |
+| **Rede** | WireGuard, BBR, IP_SET, CIFS |
+| **DFS** | **DroidSpaces-OSS** (container runtime) |
+| **Performance** | NTSync |
+| **Ocultação extra** | Ptrace Leak Fix, Unicode Fix |
+| **BPF** | BTF / eBPF / FUSE-BPF |
+| **FS** | TMPFS xattr / POSIX ACLs |
 
----
-
-## Installation
-
-See **[Installation Guide](https://github.com/WildKernels/GKI_KernelSU_SUSFS/wiki/Installation)**.
-
----
-
-## Our Projects
-
-| Device | Repository | Description |
-|--------|------------|-------------|
-| **Multi** | [GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS) | Google GKI sources — built to be generic and work across many devices |
-| **Pixel** | [Sultan_KernelSU_SUSFS](https://github.com/WildKernels/Sultan_KernelSU_SUSFS) | Custom kernels for specific Pixel devices — built from Sultan sources |
-| **Samsung** | [Samsung_KernelSU_SUSFS](https://github.com/WildKernels/Samsung_KernelSU_SUSFS) | Built from Samsung sources and manifest |
-| **OnePlus** | [OnePlus_KernelSU_SUSFS](https://github.com/WildKernels/OnePlus_KernelSU_SUSFS) | Built from OnePlus sources and manifest |
+KMI alvo: **`5.10-android12`** · kernel final: **`5.10.269-android12`** · page size **4k**.
 
 ---
 
-## Special Thanks
+## Como compilar (fork + GitHub Actions)
 
-**These amazing people and projects make this possible:**
+Não precisa de PC potente — o build roda na nuvem.
 
-- **KernelSU** — [tiann](https://github.com/tiann/KernelSU)
-- **KernelSU-Next** — [rifsxd](https://github.com/KernelSU-Next/KernelSU-Next)
-- **KernelSU-Next SUSFS Fork** — [pershoot](https://github.com/pershoot/KernelSU-Next)
-- **ReSukiSU** — [ReSukiSU](https://github.com/ReSukiSU/ReSukiSU)
-- **Magic-KSU** — [5ec1cff](https://github.com/5ec1cff/KernelSU)
-- **SUSFS** — [simonpunk](https://gitlab.com/simonpunk/susfs4ksu)
-- **SUSFS Module** — [sidex15](https://github.com/sidex15)
-- **NoMount** — [maxsteeel](https://github.com/maxsteeel/nomount)
-- **DroidSpaces-OSS** — [ravindu644](https://github.com/ravindu644/Droidspaces-OSS)
-- **Baseband-guard (BBG)** — [vc-teahouse](https://github.com/vc-teahouse/Baseband-guard)
+### 1. Fork
+1. Abra este repositório e clique em **Fork**.
+2. No seu fork: **Actions** → **"I understand my workflows, enable them"**.
+3. **Settings → Actions → General → Workflow permissions → Read and write → Save**.
+
+### 2. Rodar o build
+**Actions → Build Kernels → Run workflow** com:
+
+| Campo | Valor |
+|---|---|
+| Release Type | `CI` |
+| Use cache | `false` (1ª vez) |
+| Kernel Version | **`5.10.x-android12`** |
+| Patch date (`os_patch_level`) | **`lts`** |
+| ARM64 page size | `4k` |
+| Kernel Branding | `Wild` |
+| Commit mode | `verified` |
+| **Root Flavor** | **`SukiSU-Ultra`** |
+| SUSFS / NoMount / Baseband Guard / Networking / DroidSpaces / NTSync / Ptrace / Unicode / BPF | ✅ `true` |
+| Performance | `true` (opcional) |
+| Test release notes | `false` |
+
+> ⚠️ **Não deixe nada em `All`.** O `Root Flavor` **tem** que ser `SukiSU-Ultra`
+> (é o único que tem KPM).
+
+Ao terminar (~15–40 min), baixe o **`...-AnyKernel3`** em **Artifacts**.
+
+### 3. (Opcional) Build local
+Veja [`docs/`](docs/) — o caminho via GitHub Actions é bem mais confiável.
+
+---
+
+## Como flashar (Moto G54 / cancunf)
+
+> Faça backup do `boot` **antes** de tudo. Sempre.
+
+### Jeito fácil — Kernel Flasher
+1. Instale o **Kernel Flasher** (precisa de root).
+2. **Flash AnyKernel3** → selecione o `.zip` do build → reinicie.
+
+### Se o fastboot reclamar (`Preflash validation failed`)
+A Motorola **bloqueia `fastboot flash boot`** mesmo com bootloader desbloqueado.
+O contorno que funciona é o **fastbootd** (userspace):
+
+```bash
+adb reboot fastboot          # entra no fastbootd (não no bootloader)
+fastboot devices             # deve listar como "fastbootd"
+fastboot flash boot boot.img # OKAY (sem preflash validation)
+fastboot reboot
+```
+
+Ou use o **Kernel Flasher** / **restore do boot** se der bootloop.
+
+### Restaurar se der bootloop
+```bash
+fastboot flash boot boot-backup.img
+# ou: Kernel Flasher → Restore
+```
+
+---
+
+## Stack de ocultação recomendada (módulos)
+
+O kernel é a **base**. Para esconder root de banco/jogo de verdade, combine:
+
+| Camada | Módulo |
+|---|---|
+| Zygisk | **ZygiskNext** (ou ReZygisk) + **TreatWheel** |
+| SUSFS userspace | **BRENE** |
+| TEE / Integridade | **TEESimulator-RS** + **keybox** (+ PIF) |
+| App list | **HMA-OSS** |
+| Props | **VBMeta Disguiser** |
+| Manager | **SukiSU-Ultra Manager** (ou KernelSU-Next spoofed) |
+
+> Nada disso "garante" passar em banco (é corrida armamentista) — mas é o
+> estado da arte.
+
+---
+
+## Contribuindo
+
+Pull requests são **muito bem-vindos** (correções, suporte a outros KMI,
+documentação, novos KPMs).
+
+1. **Fork** este repositório.
+2. Crie um branch: `git checkout -b minha-melhoria`.
+3. Commit + push.
+4. Abra um **Pull Request** descrevendo o que mudou e como testou.
+5. Também aceito **Issues** com bugs/ideias.
+
+> Como é um **fork**, PRs abertos *neste* repositório funcionam normalmente
+> (o fork é sua base). Para mandar melhorias pro WildKernels upstream,
+> abra o PR no repositório original.
+
+---
+
+## Créditos
+
+Base: **[WildKernels/GKI_KernelSU_SUSFS](https://github.com/WildKernels/GKI_KernelSU_SUSFS)** (TheWildJames et al.).
+
+- **SukiSU-Ultra** — [SukiSU-Ultra/SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
+- **SUSFS** — [simonpunk/susfs4ksu](https://gitlab.com/simonpunk/susfs4ksu)
+- **KPM (KernelPatch)** — [bmax121/KernelPatch](https://github.com/bmax121/KernelPatch) · [SukiSU-Ultra/SukiSU_patch](https://github.com/SukiSU-Ultra/SukiSU_patch)
+- **NoMount** — [maxsteeel/nomount](https://github.com/maxsteeel/nomount)
+- **Baseband Guard** — [vc-teahouse/Baseband-guard](https://github.com/vc-teahouse/Baseband-guard)
+- **DroidSpaces-OSS** — [ravindu644/Droidspaces-OSS](https://github.com/ravindu644/Droidspaces-OSS)
 - **Kernel Patches** — [WildKernels/kernel_patches](https://github.com/WildKernels/kernel_patches)
-- **AnyKernel3** — [osm0sis](https://github.com/osm0sis/AnyKernel3)
-- **Sultan Kernels (Pixel)** — [kerneltoast](https://github.com/kerneltoast)
-- **Device Boot Fix** — [Boot fix commit](https://github.com/Anything-at-25-00/android_kernel_common_android12-5.10/commit/2476d262b597fe8af82cfb7aaf96676f51c6b4ed)
-
-**Contributors to this repository:**
-
-[![Contributors](https://contrib.rocks/image?repo=WildKernels/GKI_KernelSU_SUSFS)](https://github.com/WildKernels/GKI_KernelSU_SUSFS/graphs/contributors)
-
-Have an idea or improvement in mind? Contributions are always welcome — feel free to open a pull request or share your thoughts!
+- **AnyKernel3** — [osm0sis/AnyKernel3](https://github.com/osm0sis/AnyKernel3)
+- **KPM integration reference** — [zzh20188/GKI_KernelSU_SUSFS](https://github.com/zzh20188/GKI_KernelSU_SUSFS), [ShirkNeko/Action_OnePlus_MKSU_SUSFS](https://github.com/ShirkNeko/Action_OnePlus_MKSU_SUSFS), [Lokitla/GKI_SUKISU_SUSFS_for_Lokita](https://github.com/Lokitla/GKI_SUKISU_SUSFS_for_Lokita)
+- **Comunidade cancunf** — cyberknight777, sarthakroy2002 e o canal [@motorolag54updates](https://t.me/motorolag54updates)
 
 ---
 
-## Community
+## Licença
 
-<div align="center">
-
-[![Telegram Group](https://img.shields.io/badge/Telegram-%40WildKernelsTG-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/WildKernelsTG)
-[![Telegram DM](https://img.shields.io/badge/Telegram-%40TheWildJames-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/TheWildJames)
-
-</div>
-
-Need help? Open an issue in this repository or reach out on Telegram. Please ask in the [WildKernelsTG group](https://t.me/WildKernelsTG) first for general issues. DMs to [@TheWildJames](https://t.me/TheWildJames) are always open — use for priority / very important, or if you just want to talk and learn.
-
----
-
-## Donations
-
-> [!IMPORTANT]
-> **Kind note:** A donation is truly just a gift — not a payment for support, features, or priority. It doesn't unlock anything extra on our side and doesn't change how we help you; everyone gets the same community support whether you donate or not. Think of it as a kind “thank you” to help keep development going — not a transaction. If you do choose to give, we're genuinely grateful, but please never feel obligated.
-
-- PayPal: [bauhd@outlook.com](mailto:bauhd@outlook.com)
-- Card: <https://buy.stripe.com/5kQ28sdi08Nr0Xc2fU5os00>
-- LTC: `MVaN1ToSuks2cdK9mB3M8EHCfzQSyEMf6h`
-- BTC: `3BBXAMS4ZuCZwfbTXxWGczxHF4isymeyxG`
-- ETH: `0x2b9C846c84d58717e784458406235C09a834274e`
-- Patreon: <https://patreon.com/WildKernels>
+- Kernel (`kernel/`): **GPL-2.0-only**
+- Restante do repositório: **GPL-3.0-or-later** (ver [LICENSE](LICENSE) e [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md))
