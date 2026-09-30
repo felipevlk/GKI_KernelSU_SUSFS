@@ -60,6 +60,23 @@ jobs:
           cmake --build build || true
           find /tmp/hide -name '*.kpm' -exec cp -v {} "$GITHUB_WORKSPACE/" \; || true
 
+      - name: Build selinux-query-guard (OoOIOoOIOoO)
+        continue-on-error: true
+        run: |
+          git clone --depth=1 https://github.com/OoOIOoOIOoO/selinux-query-guard.git /tmp/sqg
+          cd /tmp/sqg
+          make KP_DIR="$KP" TARGET_COMPILE=aarch64-none-elf- || true
+          find . -name '*.kpm' -exec cp -v {} "$GITHUB_WORKSPACE/" \; || true
+
+      - name: Build dsp_bypass (Ccccccccvvm)
+        continue-on-error: true
+        run: |
+          git clone --depth=1 https://github.com/Ccccccccvvm/dsp_bypass.git /tmp/dsp
+          cd /tmp/dsp
+          make KP_DIR="$KP" TARGET_COMPILE=aarch64-none-elf- || true
+          make CC="aarch64-none-elf-gcc" INC="-I$KP/kernel/include -I$KP/kernel/patch/include -I$KP/kernel/linux/include -I$KP/kernel/linux/arch/arm64/include" || true
+          find . -name '*.kpm' -exec cp -v {} "$GITHUB_WORKSPACE/" \; || true
+
       - name: List built KPMs
         run: |
           ls -la *.kpm 2>/dev/null || echo "NENHUM kpm gerado"
