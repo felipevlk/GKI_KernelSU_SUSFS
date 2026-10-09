@@ -224,7 +224,7 @@ jobs:
       run: |
         set +e
         HIDE="${{ github.workspace }}/kernel_patches/hide"
-        for d in ReSukiSU SukiSU-Ultra KernelSU-Next KernelSU KowSU; do
+        for d in ReSukiSU ReSukiSU-Ultima SukiSU-Ultra KernelSU-Next KernelSU KowSU; do
           f="$d/kernel/manager/pkg_observer.c"
           if [ -f "$f" ]; then
             sed -i 's/ksu_defer_track_throne();/\/\* throne-hunt disabled *\//g' "$f"
