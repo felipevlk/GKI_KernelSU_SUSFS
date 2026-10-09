@@ -217,18 +217,33 @@ jobs:
         flavor: ${{ inputs.root_flavor }}
         commit: ${{ inputs.root_commit }}
 
-    - name: Disable KernelSU throne-hunt trigger (cancunf)
+    - name: Disable KernelSU throne-hunt + apply hide patches (cancunf)
       if: inputs.root_flavor != 'none'
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
+        set +e
+        HIDE="${{ github.workspace }}/kernel_patches/hide"
         for d in ReSukiSU SukiSU-Ultra KernelSU-Next KernelSU KowSU; do
           f="$d/kernel/manager/pkg_observer.c"
           if [ -f "$f" ]; then
-            sed -i 's/ksu_defer_track_throne();/\/\* throne-hunt disabled *\//g' "$f" || true
-            echo "[*] throne-hunt patched: $f"
-            grep -n 'throne-hunt disabled' "$f" || true
+            sed -i 's/ksu_defer_track_throne();/\/\* throne-hunt disabled *\//g' "$f"
+            echo "[*] trigger disabled: $f"
           fi
+          i="$d/kernel/core/init.c"
+          if [ -f "$i" ]; then
+            sed -i 's/track_throne(TRACK_THRONE_FORCE_SYNCHRONOUS);/;\/* boot throne disabled *\//g' "$i"
+            echo "[*] boot scan disabled: $i"
+          fi
+          for p in 6b5f55bd.patch 2584.patch 2633.patch; do
+            if [ -f "$HIDE/$p" ]; then
+              if git -C "$d" apply --3way --reject "$HIDE/$p" 2>&1 | tail -2; then
+                echo "[+] $p applied to $d"
+              else
+                echo "[!] $p FAILED on $d (kept going)"
+              fi
+            fi
+          done
         done
 
     - name: Mark No Root build metadata
@@ -457,6 +472,22 @@ jobs:
       with:
         version: ${{ inputs.version }}
         kernel_version: ${{ inputs.kernel_version }}
+
+    - name: Apply Maphides /proc lineage hiding (cancunf)
+      if: inputs.root_flavor != 'none'
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        set +e
+        P="${{ github.workspace }}/kernel_patches/hide/69_hide_stuff.patch"
+        if [ -f "$P" ]; then
+          if git apply -p1 --3way --reject "$P" 2>&1 | tail -3; then
+            echo "[+] Maphides applied"
+            grep -n 'map_files\|lineage\|jit-zygote' fs/proc/base.c fs/proc/task_mmu.c 2>/dev/null | head
+          else
+            echo "[!] Maphides FAILED (kept going)"
+          fi
+        fi
 
     - name: Integrate NoMount
       if: contains(inputs.feature_set, 'NoMount') || inputs.feature_set == 'All'
