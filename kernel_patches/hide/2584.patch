@@ -1,0 +1,48 @@
+From 8c88027a0667faa32b6692aa9f0f2b1367739194 Mon Sep 17 00:00:00 2001
+From: backslashxx <118538522+backslashxx@users.noreply.github.com>
+Date: Thu, 15 May 2025 22:12:16 +0800
+Subject: [PATCH] kernel/throne_tracker: we just uninstalled the manager, stop
+ looking for it (#2584)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+When the manager UID disappears from packages.list, we correctly
+invalidate it — good. But, in the very next breath, we start scanning
+/data/app hoping to find it again?
+
+This event is just unnecessary I/O, exactly when we should be doing
+less.
+Apparently this causes hangups and stuckups which is REALLY noticeable
+on Ultra-Legacy devices.
+
+Skip the scan — we’ll catch the reinstall next time packages.list
+updates.
+
+Signed-off-by: backslashxx
+<118538522+backslashxx@users.noreply.github.com>
+
+Signed-off-by: backslashxx <118538522+backslashxx@users.noreply.github.com>
+---
+ kernel/throne_tracker.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/kernel/throne_tracker.c b/kernel/throne_tracker.c
+index 351bc3777e70..61ef55ebbf52 100644
+--- a/kernel/throne_tracker.c
++++ b/kernel/throne_tracker.c
+@@ -357,12 +357,14 @@ void track_throne()
+ 		if (ksu_is_manager_uid_valid()) {
+ 			pr_info("manager is uninstalled, invalidate it!\n");
+ 			ksu_invalidate_manager_uid();
++			goto prune;
+ 		}
+ 		pr_info("Searching manager...\n");
+ 		search_manager("/data/app", 2, &uid_list);
+ 		pr_info("Search manager finished\n");
+ 	}
+ 
++prune:
+ 	// then prune the allowlist
+ 	ksu_prune_allowlist(is_uid_exist, &uid_list);
+ out:
