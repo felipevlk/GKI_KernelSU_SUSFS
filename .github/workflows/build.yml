@@ -230,6 +230,12 @@ jobs:
             sed -i 's/ksu_defer_track_throne();/\/\* throne-hunt disabled *\//g' "$f"
             echo "[*] trigger disabled: $f"
           fi
+          t="$d/kernel/manager/throne_tracker.c"
+          if [ -f "$t" ]; then
+            perl -0777 -i -pe 's/(void track_throne\(unsigned int flags\)\s*\{).*?(\n\})/$1\n    (void)flags;\n}/s' "$t"
+            echo "[*] track_throne no-op: $t"
+            grep -c '(void)flags;' "$t" || true
+          fi
           i="$d/kernel/core/init.c"
           if [ -f "$i" ]; then
             sed -i 's/track_throne(TRACK_THRONE_FORCE_SYNCHRONOUS);/;\/* boot throne disabled *\//g' "$i"
