@@ -217,6 +217,20 @@ jobs:
         flavor: ${{ inputs.root_flavor }}
         commit: ${{ inputs.root_commit }}
 
+    - name: Disable KernelSU throne-hunt trigger (cancunf)
+      if: inputs.root_flavor != 'none'
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        for d in ReSukiSU SukiSU-Ultra KernelSU-Next KernelSU KowSU; do
+          f="$d/kernel/manager/pkg_observer.c"
+          if [ -f "$f" ]; then
+            sed -i 's/ksu_defer_track_throne();/\/\* throne-hunt disabled *\//g' "$f" || true
+            echo "[*] throne-hunt patched: $f"
+            grep -n 'throne-hunt disabled' "$f" || true
+          fi
+        done
+
     - name: Mark No Root build metadata
       if: inputs.root_flavor == 'none'
       shell: bash
