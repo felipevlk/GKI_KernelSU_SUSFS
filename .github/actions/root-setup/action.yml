@@ -35,6 +35,11 @@ runs:
             directory="ReSukiSU"
             manager="ReSukiSU Manager"
             ;;
+          ultima)
+            repo="https://github.com/spacealtctrl/ReSukiSU-Ultima.git"
+            directory="ReSukiSU-Ultima"
+            manager="ReSukiSU Ultima Manager"
+            ;;
           sukisu-ultra)
             repo="https://github.com/SukiSU-Ultra/SukiSU-Ultra.git"
             directory="SukiSU-Ultra"
@@ -56,7 +61,7 @@ runs:
           exit 2
         fi
 
-        for candidate in KernelSU KernelSU-Next ReSukiSU SukiSU-Ultra KowSU; do
+        for candidate in KernelSU KernelSU-Next ReSukiSU ReSukiSU-Ultima SukiSU-Ultra KowSU; do
           if [ "$candidate" != "$directory" ] && [ -e "$candidate" ]; then
             echo "Refusing mixed root implementations: found $candidate." >&2
             exit 1
