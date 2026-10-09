@@ -77,6 +77,7 @@ on:
           - KernelSU-Next
           - KernelSU
           - ReSukiSU
+          - ReSukiSU Ultima
           - SukiSU-Ultra
           - KowSU
           - No Root
@@ -162,6 +163,7 @@ jobs:
       susfs_commit_android16_6_12_sukisu_ultra: ${{ steps.resolve.outputs.susfs_commit_android16_6_12_sukisu_ultra }}
       ksu_commit: ${{ steps.resolve.outputs.ksu_commit }}
       resukisu_commit: ${{ steps.resolve.outputs.resukisu_commit }}
+      ultima_commit: ${{ steps.resolve.outputs.ultima_commit }}
       sukisu_ultra_commit: ${{ steps.resolve.outputs.sukisu_ultra_commit }}
       kowsu_commit: ${{ steps.resolve.outputs.kowsu_commit }}
       kernel_patches_commit: ${{ steps.resolve.outputs.kernel_patches_commit }}
@@ -305,6 +307,8 @@ jobs:
           emit ksu_commit "$KERNELSU_COMMIT"
           emit resukisu_commit "$RESUKISU_COMMIT"
           emit sukisu_ultra_commit "$SUKISU_ULTRA_COMMIT"
+          ULTIMA_COMMIT="$(resolve_sha https://github.com/spacealtctrl/ReSukiSU-Ultima.git refs/heads/main)"
+          emit ultima_commit "$ULTIMA_COMMIT"
           # KowSU has no SUSFS support, so it always tracks latest on master
           # (it can only ever run with SUSFS off — enforced below).
           KOWSU_COMMIT="$(resolve_sha https://github.com/KOWX712/KernelSU.git refs/heads/master)"
@@ -338,6 +342,11 @@ jobs:
               echo "root_flavor=resukisu" >> "$GITHUB_OUTPUT"
               emit root_commit "$RESUKISU_COMMIT"
               ROOT_MATRIX="[$(mk_entry resukisu ReSukiSU "$RESUKISU_COMMIT")]"
+              ;;
+            ReSukiSU Ultima)
+              echo "root_flavor=ultima" >> "$GITHUB_OUTPUT"
+              emit root_commit "$ULTIMA_COMMIT"
+              ROOT_MATRIX="[$(mk_entry ultima "ReSukiSU Ultima" "$ULTIMA_COMMIT")]"
               ;;
             SukiSU-Ultra)
               echo "root_flavor=sukisu-ultra" >> "$GITHUB_OUTPUT"
