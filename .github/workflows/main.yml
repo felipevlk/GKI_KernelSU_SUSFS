@@ -343,7 +343,7 @@ jobs:
               emit root_commit "$RESUKISU_COMMIT"
               ROOT_MATRIX="[$(mk_entry resukisu ReSukiSU "$RESUKISU_COMMIT")]"
               ;;
-            ReSukiSU Ultima)
+            "ReSukiSU Ultima")
               echo "root_flavor=ultima" >> "$GITHUB_OUTPUT"
               emit root_commit "$ULTIMA_COMMIT"
               ROOT_MATRIX="[$(mk_entry ultima "ReSukiSU Ultima" "$ULTIMA_COMMIT")]"
